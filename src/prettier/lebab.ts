@@ -14,7 +14,6 @@ export default function(code: string) {
     "class",
     "template",
     "default-param",
-    "destruct-param",
     "includes"
   ]).code;
 }

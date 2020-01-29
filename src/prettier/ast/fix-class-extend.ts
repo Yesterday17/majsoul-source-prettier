@@ -2,16 +2,31 @@ import j, {
   Identifier,
   ASTPath,
   LogicalExpression,
-  ExpressionStatement,
-  CallExpression
+  ExpressionStatement
 } from "jscodeshift";
 import { Collection } from "jscodeshift/src/Collection";
 
 function generateSuperExpressionStatement(
   path: ASTPath<LogicalExpression>
 ): ExpressionStatement {
-  const args = (path.node.left as CallExpression).arguments.splice(1);
-  return j.expressionStatement(j.callExpression(j.super(), args));
+  const root = j(path);
+  const call = root.find(j.CallExpression).paths()[0];
+  const type = (root.find(j.MemberExpression).paths()[0].value
+    .property as Identifier).name;
+
+  if (type === "call") {
+    // A. base.call(this, arguments...) || this
+    const args = call.value.arguments.splice(1);
+    return j.expressionStatement(j.callExpression(j.super(), args));
+  } else if (type === "apply") {
+    // B. e != null && base.apply(this, args) || this
+    const spread = call.value.arguments[1] as Identifier;
+    return j.expressionStatement(
+      j.callExpression(j.super(), [j.spreadElement(spread)])
+    );
+  } else {
+    throw Error("Unexpected type: " + type);
+  }
 }
 
 export default function(root: Collection<any>) {
@@ -33,6 +48,7 @@ export default function(root: Collection<any>) {
 
       // Remove extend in constructor
       cls
+        .find(j.ClassBody)
         .find(j.MethodDefinition, { key: { name: "constructor" } })
         .forEach(path => {
           const block = j(path.value.value.body);
