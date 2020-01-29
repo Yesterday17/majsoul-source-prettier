@@ -1,10 +1,10 @@
 import j, { UnaryExpression, CallExpression, Identifier } from "jscodeshift";
-import { Collection, fromPaths } from "jscodeshift/src/Collection";
+import { Collection } from "jscodeshift/src/Collection";
 
 function rename(path, oldName: string, newName: string) {
   var rootScope = path.scope;
   var rootPath = rootScope.path;
-  fromPaths([rootPath])
+  j(rootPath)
     .find(j.Identifier, { name: oldName })
     .filter(function(path) {
       // ignore properties in MemberExpressions
@@ -67,7 +67,7 @@ export default function(root: Collection<any>) {
       );
     })
     .forEach(path => {
-      const root = fromPaths([path]) as Collection<any>;
+      const root = j(path);
       const func = root.find(j.FunctionExpression).paths()[0];
       const logi = root
         .find(j.LogicalExpression, { operator: "||" })
@@ -76,7 +76,7 @@ export default function(root: Collection<any>) {
 
       // Rename parameter
       const from = (func.node.params[0] as Identifier).name;
-      const to = fromPaths([logi])
+      const to = j(logi)
         .find(j.Identifier)
         .paths()[0].value.name;
       rename(func, from, to);

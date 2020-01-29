@@ -1,8 +1,8 @@
 import j, { VariableDeclarator, Identifier } from "jscodeshift";
-import { Collection, fromPaths } from "jscodeshift/src/Collection";
+import { Collection } from "jscodeshift/src/Collection";
 
 export default function(root: Collection<any>) {
-  const id = root
+  root
     .find(j.VariableDeclaration)
     .filter(
       path =>
@@ -10,7 +10,7 @@ export default function(root: Collection<any>) {
           .name === "__extends"
     )
     .forEach(path => {
-      const root = fromPaths([path]) as Collection<any>;
+      const root = j(path);
       const dec = root.find(j.VariableDeclaration);
       (dec.length === 0
         ? root

@@ -2,8 +2,6 @@ import { transform } from "lebab";
 
 export default function(code: string) {
   return transform(code, [
-    // 'arrow',
-    // 'arrow-return',
     "for-of",
     "for-each",
     "arg-rest",
@@ -13,9 +11,7 @@ export default function(code: string) {
     "no-strict",
     "exponent",
     "multi-var",
-    // 'let',
     "class",
-    // 'commonjs',
     "template",
     "default-param",
     "destruct-param",

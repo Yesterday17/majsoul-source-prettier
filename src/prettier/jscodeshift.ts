@@ -2,9 +2,15 @@ import j from "jscodeshift";
 import removeSequencedExpression from "./ast/remove-sequenced-expression";
 import removeVarExtends from "./ast/remove-var-extends";
 import extractExpressionFunction from "./ast/extract-expression-function";
+import fixClassExtend from "./ast/fix-class-extend";
+import commonConstantReplace from "./ast/common-constant-replace";
+import binarySequenceSwitch from "./ast/binary-sequence-switch";
 
 export function before(code: string): string {
   const ast = j(code);
+  commonConstantReplace(ast);
+  binarySequenceSwitch(ast);
+
   removeSequencedExpression(ast);
   removeVarExtends(ast);
   extractExpressionFunction(ast);
@@ -12,5 +18,7 @@ export function before(code: string): string {
 }
 
 export function after(code: string): string {
-  return code;
+  const ast = j(code);
+  fixClassExtend(ast);
+  return ast.toSource();
 }
