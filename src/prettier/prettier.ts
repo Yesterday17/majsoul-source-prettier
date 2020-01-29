@@ -1,12 +1,12 @@
-import prettier from 'prettier';
+import prettier from "prettier";
 
 export default function(code: string) {
   return prettier.format(code, {
     semi: true,
-    arrowParens: 'avoid',
+    arrowParens: "always",
     singleQuote: true,
     tabWidth: 2,
-    endOfLine: 'lf',
-    parser: 'babel'
+    endOfLine: "lf",
+    parser: "babel"
   });
 }

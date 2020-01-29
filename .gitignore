@@ -2,3 +2,10 @@ node_modules
 lib
 *.log
 test.js
+
+# result
+result/*.js
+
+# test
+src/test.ts
+test

@@ -9,19 +9,22 @@
     "majsoul": "lib/index.js"
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "start": "node ./lib/index.js",
+    "debug": "yarn build && yarn start",
+    "test": "yarn build && node ./lib/test.js"
   },
   "devDependencies": {
     "@types/jscodeshift": "^0.6.3",
     "@types/node": "^12.7.8",
     "@types/node-fetch": "^2.5.2",
+    "@types/prettier": "^1.19.0",
     "typescript": "^3.6.3"
   },
   "dependencies": {
     "jscodeshift": "^0.6.4",
     "lebab": "^3.1.0",
     "node-fetch": "^2.6.0",
-    "prettier": "^1.18.2",
-    "putout": "^6.10.2"
+    "prettier": "^1.18.2"
   }
 }
