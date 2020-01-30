@@ -38,7 +38,14 @@ export default function(root: Collection<any>) {
 
       // Add superClass
       const cls = j(path.parent.parent);
-      cls.find(j.ClassDeclaration, { id: { name: clz } }).replaceWith(path => {
+      const classes = cls.find(j.ClassDeclaration, { id: { name: clz } });
+      if (classes.length === 0) {
+        // Skip non-class __extends
+        // TODO: Make all __extends wrapped with classes at this step
+        return;
+      }
+
+      classes.replaceWith(path => {
         return j.classDeclaration(
           path.node.id,
           path.node.body,

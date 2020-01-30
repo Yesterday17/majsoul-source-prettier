@@ -5,6 +5,7 @@ import extractExpressionFunction from "./ast/extract-expression-function";
 import fixClassExtend from "./ast/fix-class-extend";
 import commonConstantReplace from "./ast/common-constant-replace";
 import binarySequenceSwitch from "./ast/binary-sequence-switch";
+import addExtendPlaceholder from "./ast/add-extend-placeholder";
 
 export function before(code: string): string {
   const ast = j(code);
@@ -12,6 +13,7 @@ export function before(code: string): string {
   binarySequenceSwitch(ast);
 
   removeSequencedExpression(ast);
+  addExtendPlaceholder(ast);
   removeVarExtends(ast);
   extractExpressionFunction(ast);
   return ast.toSource();
