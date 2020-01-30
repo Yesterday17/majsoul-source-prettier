@@ -12,13 +12,16 @@
     "build": "tsc",
     "start": "node ./lib/index.js",
     "debug": "yarn build && yarn start",
-    "test": "yarn build && node ./lib/test.js"
+    "test": "mocha"
   },
   "devDependencies": {
     "@types/jscodeshift": "^0.6.3",
     "@types/node": "^12.7.8",
     "@types/node-fetch": "^2.5.2",
     "@types/prettier": "^1.19.0",
+    "chai": "*",
+    "mocha": "*",
+    "nyc": "^15.0.0",
     "typescript": "^3.6.3"
   },
   "dependencies": {
