@@ -1,22 +1,24 @@
-import j, { UnaryExpression, CallExpression, Identifier } from "jscodeshift";
+import j, { CallExpression, LogicalExpression } from "jscodeshift";
 import { Collection } from "jscodeshift/src/Collection";
 
-function rename(path, oldName: string, newName: string) {
+function rename(path, oldName: string, newName: any) {
   var rootScope = path.scope;
   var rootPath = rootScope.path;
   j(rootPath)
     .find(j.Identifier, { name: oldName })
     .filter(function(path) {
       // ignore properties in MemberExpressions
-      var parent = path.parent.node;
+      var parent = path.parent.value;
       return (
-        !j.MemberExpression.check(parent) ||
-        parent.property !== path.node ||
-        !parent.computed
+        parent.type !== "FunctionExpression" &&
+        parent.type !== "AssignmentExpression" &&
+        (!j.MemberExpression.check(parent) ||
+          parent.property !== path.node ||
+          !parent.computed)
       );
     })
-    .forEach(function(path) {
-      var scope = path.scope;
+    .forEach(function(p) {
+      var scope = p.scope;
       while (scope && scope !== rootScope) {
         if (scope.declares(oldName)) {
           return;
@@ -25,7 +27,7 @@ function rename(path, oldName: string, newName: string) {
       }
       if (scope) {
         // identifier must refer to declared variable
-        path.get("name").replace(newName);
+        j(p).replaceWith(newName);
       }
     });
 }
@@ -37,54 +39,61 @@ function rename(path, oldName: string, newName: string) {
  * @param root
  */
 export default function(root: Collection<any>) {
-  root
-    .find(j.ExpressionStatement, {
-      expression: {
-        type: "UnaryExpression",
-        operator: "!",
-        argument: {
-          type: "CallExpression"
-        }
-      }
-    })
-    .filter(path => {
-      const exp = (path.node.expression as UnaryExpression)
-        .argument as CallExpression;
+  let path: Collection<any>;
+  while (
+    ((path = root.find(j.ExpressionStatement).filter(path => {
+      const exp = path.node.expression;
+      let call: CallExpression;
       if (
-        exp.arguments.length != 1 ||
-        exp.arguments[0].type !== "LogicalExpression"
+        exp.type === "UnaryExpression" &&
+        exp.operator === "!" &&
+        exp.argument.type === "CallExpression"
+      ) {
+        call = exp.argument;
+      } else if (exp.type === "CallExpression") {
+        call = exp;
+      } else {
+        return false;
+      }
+
+      // Not condition in typescript
+      if (
+        call.arguments.length !== 1 ||
+        call.arguments[0].type !== "LogicalExpression"
       )
         return false;
-      const logical = exp.arguments[0];
+
+      const logical = call.arguments[0];
       return (
         logical.operator === "||" &&
-        logical.left.type === "Identifier" &&
         logical.right.type === "AssignmentExpression" &&
         logical.right.operator === "=" &&
-        logical.right.left.type === "Identifier" &&
         logical.right.right.type === "ObjectExpression" &&
         logical.right.right.properties.length === 0
       );
-    })
-    .forEach(path => {
-      const root = j(path);
-      const func = root.find(j.FunctionExpression).paths()[0];
-      const logi = root
-        .find(j.LogicalExpression, { operator: "||" })
-        .paths()
-        .reverse()[0];
+    })),
+    path.length > 0)
+  ) {
+    const call = path.find(j.CallExpression).paths()[0].value;
+    const func = path.find(j.FunctionExpression).paths()[0];
 
-      // Rename parameter
-      const from = (func.node.params[0] as Identifier).name;
-      const to = j(logi)
-        .find(j.Identifier)
-        .paths()[0].value.name;
-      rename(func, from, to);
+    // Rename parameter
+    const from = call.callee["params"][0]["name"];
+    const to = (call.arguments[0] as LogicalExpression).left;
+    rename(func, from, to);
 
-      // Initialization
-      path.insertBefore(`${to} || (${to} = {});`);
-      // Extract out
-      func.node.body.body.forEach(st => path.insertBefore(st));
-    })
-    .remove();
+    // Replace
+    path.replaceWith([
+      j.expressionStatement(
+        j.logicalExpression(
+          "||",
+          to,
+          j.assignmentExpression("=", to, j.objectExpression([]))
+        )
+      ),
+      ...func.value.body.body
+    ]);
+  }
+
+  return root;
 }

@@ -18,7 +18,7 @@ export default function(code: string): CodeObject {
   const majsoul = code.substr(majsoul_start);
   const majsoul_splitted = majsoul
     .split("\nvar")
-    .map((code, index) => (index == 0 ? code : "var" + code));
+    .map((code, index) => (index === 0 ? code : "var" + code));
   return {
     laya,
     majsoul: {
