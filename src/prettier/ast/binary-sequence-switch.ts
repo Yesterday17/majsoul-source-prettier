@@ -13,4 +13,5 @@ export default function(root: Collection<any>) {
     .replaceWith(p =>
       j.binaryExpression(p.value.operator, p.value.right, p.value.left)
     );
+  return root;
 }

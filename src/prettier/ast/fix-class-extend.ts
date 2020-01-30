@@ -93,4 +93,5 @@ export default function(root: Collection<any>) {
       // Remove __extends
       j(path).remove();
     });
+  return root;
 }

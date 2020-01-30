@@ -16,4 +16,6 @@ export default function(root: Collection<any>) {
   root
     .find(j.UnaryExpression, { operator: "!", argument: { value: 1 } })
     .replaceWith(j.literal(false));
+
+  return root;
 }

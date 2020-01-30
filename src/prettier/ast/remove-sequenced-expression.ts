@@ -1,16 +1,16 @@
-import j from 'jscodeshift';
-import { Collection } from 'jscodeshift/src/Collection';
+import j from "jscodeshift";
+import { Collection } from "jscodeshift/src/Collection";
 
-export default function(ast: Collection<any>) {
+export default function(root: Collection<any>) {
   let f: Collection<any>;
-  while (((f = ast.find(j.SequenceExpression)), f.length > 0)) {
+  while (((f = root.find(j.SequenceExpression)), f.length > 0)) {
     const path = f.paths()[0];
     const exps = path.value.expressions;
     const parent = (() => {
       let p = path.parent;
       while (
-        p.parent.node.type !== 'BlockStatement' &&
-        p.parent.node.type !== 'Program'
+        p.parent.node.type !== "BlockStatement" &&
+        p.parent.node.type !== "Program"
       ) {
         p = p.parent;
       }
@@ -29,4 +29,5 @@ export default function(ast: Collection<any>) {
       }
     });
   }
+  return root;
 }
