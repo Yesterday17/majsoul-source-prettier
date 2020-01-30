@@ -7,3 +7,9 @@ result/*.js
 
 # test
 src/test.ts
+
+# nyc
+.nyc_output
+
+# coverage
+coverage
